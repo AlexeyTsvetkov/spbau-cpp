@@ -11,12 +11,13 @@ public:
 	Stack(): container_(), index_(-1) {}
 	~Stack() {}
 
-	void push(T& value) {
+	void push(const T& value) {
 		container_[++index_] = value;
 	}
 
 	void pop() {
-		index_--;
+		if(index_ >= 0)
+			index_--;
 	}
 
 	T& top() {
