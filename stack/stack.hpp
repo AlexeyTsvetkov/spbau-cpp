@@ -5,7 +5,7 @@
 
 #include <array>
 
-template<typename T, template<typename, size_t> class Container = std::array>
+template<typename T, size_t MaxSize = 100, template<typename, size_t> class Container = std::array>
 class Stack {
 public:
 	Stack(): container_(), index_(-1) {}
@@ -35,7 +35,7 @@ public:
 	}
 
 private:
-	static const size_t kMaxSize = 100;
+	static const size_t kMaxSize = MaxSize;
 	Container<T, kMaxSize> container_;
 	int index_;
 
