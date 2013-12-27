@@ -1,8 +1,8 @@
 #ifndef STRING_HPP
-
 #define STRING_HPP
 
-#include <stddef.h>
+#include <cstddef>
+
 #include <iostream>
 
 class string

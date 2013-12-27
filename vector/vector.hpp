@@ -3,10 +3,12 @@
 
 #include <cstddef>
 
+#include <algorithm>
+
 template<typename T>
 class Vector {
 public:
-  Vector(): size_(0), capacity_(kInitialCapacity), data_(new T[kInitialCapacity]) {}
+  Vector(): size_(0), capacity_(kInitialCapacity), data_(alloc(kInitialCapacity)) {}
   
   ~Vector() {
     free();
@@ -20,11 +22,12 @@ public:
     return data_[i];
   }
 
-  void push_back(T value) {
+  void push_back(const T& value) {
     if(size_ == capacity_)
       reserve(capacity_ * kExpansionCoef);
 
-    data_[size_++] = value;
+    new (data_+size_) T(value);
+    size_++;
   }
 
   void resize(size_t size) {
@@ -44,9 +47,9 @@ public:
     if(capacity <= capacity_)
       return;
 
-    T* data = new T[capacity];
+    T* data = alloc(capacity);
     for(size_t i = 0; i < size_; ++i) 
-      data[i] = data_[i];
+      new (data+i) T(data_[i]);
 
     free();
     capacity_ = capacity;
@@ -62,8 +65,15 @@ private:
   Vector(const Vector& other);
   Vector& operator=(const Vector& other);
 
+  T* alloc(size_t size) {
+    return (T*)::operator new(sizeof(T) * size);
+  }
+
   void free() {
-    delete [] data_;
+    for(size_t i = 0; i < size_; ++i) 
+      (data_+i)->~T();
+
+    ::operator delete(data_);
     data_ = nullptr;
   }
 

@@ -35,7 +35,6 @@ public:
 private:
   FILE* file_;
   open_mode mode_;
-  bool opened_;
 
   file(const file& other);
   file& operator=(const file& other);
@@ -66,11 +65,12 @@ private:
     if(!can_read())
       return 0;
 
-    int ret = fscanf(file_, format, &value);
-    if(ret < 0)
-      return 0;
+    int ret;
+    if(fscanf(file_, format, &value, &ret) == 1) {
+      return (size_t)ret;
+    }
 
-    return ret; 
+    return 0;
   }
 };
 #endif 

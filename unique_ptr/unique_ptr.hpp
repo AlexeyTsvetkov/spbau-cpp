@@ -27,47 +27,48 @@ struct array_deleter {
   }
 };
 
-template<typename T>
+template<typename T, typename D>
 struct unique_ptr_ref {
     T* pointer_;
-    unique_ptr_ref (T* pointer = NULL) : pointer_(pointer) {}
+    D deleter_;
 };
 
-template<typename T, typename Deleter = default_deleter<T> >
+template<typename T, typename D = default_deleter<T> >
 class unique_ptr {
 public:
-  explicit unique_ptr(T* pointer = NULL): pointer_(pointer) {}
+  explicit unique_ptr(T* pointer = NULL, D deleter = D()): pointer_(pointer), deleter_(deleter) {}
   ~unique_ptr() { reset(NULL); };
 
-  unique_ptr(unique_ptr& other): pointer_(other.pointer_) {
+  unique_ptr(unique_ptr& other): pointer_(other.pointer_), deleter_(other.deleter_) {
     other.pointer_ = NULL;
   }
 
-  unique_ptr(unique_ptr_ref<T> ref): pointer_(ref.pointer_) {
+  unique_ptr(unique_ptr_ref<T, D> ref): pointer_(ref.pointer_), deleter_(ref.deleter_) {
     ref.pointer_ = NULL;
   }
 
-  unique_ptr<T>& operator=(unique_ptr<T>& other) {
-    unique_ptr<T> temp(other);
+  unique_ptr<T, D>& operator=(unique_ptr<T, D>& other) {
+    unique_ptr<T, D> temp(other);
     temp.swap(*this);
     return *this;
   }
 
-  void swap(unique_ptr<T>& other) {
+  void swap(unique_ptr<T, D>& other) {
     std::swap(this->pointer_, other.pointer_);
+    this->deleter_ = other.deleter_;
   }
 
-  operator unique_ptr_ref<T> () {
-    unique_ptr_ref<T> ref;
-
+  operator unique_ptr_ref<T, D> () {
+    unique_ptr_ref<T, D> ref;
     ref.pointer_ = pointer_;
+    ref.deleter_ = deleter_;
     pointer_ = NULL;
     
     return ref;
   }
 
   void reset(T* pointer) {
-    delete_(pointer_);
+    deleter_(pointer_);
     pointer_ = pointer;
   }
 
@@ -80,7 +81,7 @@ public:
   }
 private:
   T* pointer_;
-  Deleter delete_;
+  D deleter_;
 };
 
 #endif

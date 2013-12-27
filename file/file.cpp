@@ -2,29 +2,27 @@
 
 #include "file.hpp"
 
-file::file():file_(NULL), mode_(open_mode::Read), opened_(false) {}
+file::file():file_(NULL), mode_(open_mode::Read) {}
 
 file::file(std::string const &fname, open_mode mode): file_(fopen(fname.c_str(), (mode == Read)?"r":"w")),
-                                                      mode_(mode), 
-                                                      opened_(file_ != NULL) {}
+                                                      mode_(mode) {}
 
 file::~file() {
   close();
 }
 
 void file::open(std::string const &fname, open_mode mode) {
+  close();
   if(mode_ == Read)
     file_ = fopen(fname.c_str(), "r");
   else 
     file_ = fopen(fname.c_str(), "w");
 
-  opened_ = file_ != NULL;
 }
 
 void file::close() {
-  if(opened_) {
-    fclose(file_);
-  }
+  fclose(file_);
+  file_ = NULL;
 }
 
 file::open_mode file::mode() const {
@@ -32,17 +30,17 @@ file::open_mode file::mode() const {
 }
 
 bool file::opened() const {
-  return opened_;
+  return file_ != NULL;
 }
 
 bool file::eof() const {
   const int ok = 0;
-  return opened_ && feof(file_) != ok;
+  return opened() && feof(file_) != ok;
 }
 
 bool file::error() const {
   const int ok = 0;
-  return opened_ && ferror(file_) != ok;
+  return opened() && ferror(file_) != ok;
 }
 
 size_t file::write(const char* buf, size_t size) {
@@ -96,30 +94,29 @@ size_t file::read(std::string &word) {
 }
 
 size_t file::read(char &c) {
-  return read_(c, "%c"); 
+  return read_(c, "%c%n"); 
 }
 
 size_t file::read(long &value) {
-  return read_(value, "%li"); 
+  return read_(value, "%li%n"); 
 }
 
 size_t file::read(unsigned long &value) {
-  return read_(value, "%lu"); 
+  return read_(value, "%lu%n"); 
 }
 
 size_t file::read(double &value) {
-  return read_(value, "%lf"); 
+  return read_(value, "%lf%n"); 
 }
 
 size_t file::readline(std::string &line) {
   line = "";
   const size_t buf_size = 1024;
   char buf[buf_size];
-  char * ret;
 
   if(can_read()) {
-    ret = fgets(buf, buf_size, file_);
-    line.append(buf, strlen(buf));
+    if(fgets(buf, buf_size, file_));
+      line.append(buf, strlen(buf));
   }
 
   return line.size();

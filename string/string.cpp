@@ -1,6 +1,7 @@
 #include <cstring>
 #include <cstddef>
 
+#include <algorithm>
 #include <iostream>
 
 #include "string.hpp"
@@ -31,13 +32,8 @@ string& string::append(string const &str) {
 }
 
 void string::swap(string &str) {
-	char* temp = str.data;
-	str.data = this->data;
-	this->data = temp;
-
-	size_t temp_size = str.s_size;
-	str.s_size = this->s_size;
-	this->s_size = temp_size;
+	std::swap(this->data, str.data);
+	std::swap(this->s_size, str.s_size);
 }
 
 char string::at(size_t it) const {
