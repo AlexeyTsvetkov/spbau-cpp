@@ -39,12 +39,6 @@ private:
   file(const file& other);
   file& operator=(const file& other);
 
-  template<typename T>
-  size_t write(T value);
-
-  template<typename T>
-  size_t read(T& value);
-
   bool can_write() const;
   bool can_read() const;
 
